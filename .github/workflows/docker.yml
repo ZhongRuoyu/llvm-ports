@@ -27,7 +27,7 @@ jobs:
           - 11.1.0
         llvm-configuration:
           - llvm-enable-projects: clang;clang-tools-extra;lld;lldb
-            llvm-enable-runtimes: all
+            llvm-enable-runtimes: compiler-rt;libcxx;libcxxabi;libunwind;openmp
             config-suffix: ""
     env:
       DOCKERHUB_REPOSITORY: zhongruoyu/llvm-ports
