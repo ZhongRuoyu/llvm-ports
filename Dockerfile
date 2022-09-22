@@ -105,7 +105,7 @@ RUN set -ex; \
     rm -rf "$dir" /usr/src/llvm-project
 
 RUN set -ex; \
-    if [ "$(echo "${LLVM_VERSION}" | cut -d '.' -f 1)" -lt 13 ]; then \
+    if [ -d '/usr/local/lib/x86_64-unknown-linux-gnu/c++' ]; then \
         echo '/usr/local/lib/x86_64-unknown-linux-gnu/c++' > /etc/ld.so.conf.d/000-libc++.conf; \
     else \
         echo '/usr/local/lib/x86_64-unknown-linux-gnu' > /etc/ld.so.conf.d/000-libc++.conf; \
