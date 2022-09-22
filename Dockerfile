@@ -79,6 +79,10 @@ RUN set -ex; \
     rm llvm-project.tar.xz*; \
     \
     cd /usr/src/llvm-project; \
+    if [ "$(echo "${LLVM_VERSION}" | cut -d '.' -f 1)" -lt 13 ]; then \
+        # https://github.com/llvm/llvm-project/commit/0f140ce33d64b2a8f4f0866debf5fdd36e49b3ad.patch
+        sed -i '/^#include <cstdio>$/a#include <limits>' flang/runtime/unit.cpp; \
+    fi; \
     if [ "$(echo "${LLVM_VERSION}" | cut -d '.' -f 1)" -lt 12 ]; then \
         curl -fL "https://github.com/llvm/llvm-project/commit/b498303066a63a203d24f739b2d2e0e56dca70d1.patch" | git apply; \
     fi; \
