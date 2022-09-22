@@ -94,6 +94,7 @@ RUN set -ex; \
         -DCMAKE_BUILD_TYPE="${CMAKE_BUILD_TYPE}" \
         -DLLVM_ENABLE_PROJECTS="clang;clang-tools-extra;flang;lld;lldb;mlir;polly" \
         -DLLVM_ENABLE_RUNTIMES="compiler-rt;libcxx;libcxxabi;libunwind;openmp" \
+        -DLLVM_BUILD_LLVM_DYLIB=ON \
         # https://github.com/llvm/llvm-project/issues/55517
         -DCOMPILER_RT_DEFAULT_TARGET_ONLY=ON \
         ${EXTRA_CMAKE_ARGS} \

@@ -28,7 +28,7 @@ jobs:
         llvm-configuration:
           - cmake-build-type: Release
           - cmake-build-type: MinSizeRel
-            extra-cmake-args: -DLLVM_BUILD_LLVM_DYLIB=ON -DLLVM_LINK_LLVM_DYLIB=ON
+            extra-cmake-args: -DLLVM_LINK_LLVM_DYLIB=ON
             config-suffix: -slim
     env:
       DOCKERHUB_REPOSITORY: zhongruoyu/llvm-ports
