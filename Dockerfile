@@ -66,9 +66,6 @@ RUN set -ex; \
 ARG LLVM_VERSION
 ENV LLVM_VERSION ${LLVM_VERSION}
 
-ARG LLVM_ENABLE_PROJECTS
-ARG LLVM_ENABLE_RUNTIMES
-
 RUN set -ex; \
     \
     curl -fL "https://github.com/llvm/llvm-project/releases/download/llvmorg-${LLVM_VERSION}/llvm-project-${LLVM_VERSION}.src.tar.xz.sig" -o 'llvm-project.tar.xz.sig'; \
@@ -92,8 +89,8 @@ RUN set -ex; \
     \
     cmake \
         -DCMAKE_BUILD_TYPE=Release \
-        -DLLVM_ENABLE_PROJECTS="${LLVM_ENABLE_PROJECTS}" \
-        -DLLVM_ENABLE_RUNTIMES="${LLVM_ENABLE_RUNTIMES}" \
+        -DLLVM_ENABLE_PROJECTS="clang;clang-tools-extra;flang;lld;lldb;mlir;polly" \
+        -DLLVM_ENABLE_RUNTIMES="compiler-rt;libcxx;libcxxabi;libunwind;openmp" \
         # https://github.com/llvm/llvm-project/issues/55517
         -DCOMPILER_RT_DEFAULT_TARGET_ONLY=ON \
         /usr/src/llvm-project/llvm \

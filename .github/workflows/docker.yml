@@ -25,13 +25,6 @@ jobs:
           - 13.0.1
           - 12.0.1
           - 11.1.0
-        llvm-configuration:
-          - llvm-enable-projects: clang;clang-tools-extra;lld;lldb
-            llvm-enable-runtimes: compiler-rt;libcxx;libcxxabi;libunwind;openmp
-            config-suffix: ""
-          - llvm-enable-projects: clang;clang-tools-extra;flang;lld;lldb;mlir;polly
-            llvm-enable-runtimes: compiler-rt;libcxx;libcxxabi;libunwind;openmp
-            config-suffix: -all
     env:
       DOCKERHUB_REPOSITORY: zhongruoyu/llvm-ports
       PLATFORMS: linux/amd64
@@ -46,9 +39,6 @@ jobs:
           echo "LLVM_VERSION_MAJOR=$(echo "${{ matrix.llvm-version }}" | cut -d '.' -f 1)" | tee -a "$GITHUB_ENV"
           echo "LLVM_VERSION_MINOR=$(echo "${{ matrix.llvm-version }}" | cut -d '.' -f 2)" | tee -a "$GITHUB_ENV"
           echo "LLVM_VERSION_REVISION=$(echo "${{ matrix.llvm-version }}" | cut -d '.' -f 3)" | tee -a "$GITHUB_ENV"
-          echo "LLVM_ENABLE_PROJECTS=${{ matrix.llvm-configuration.llvm-enable-projects }}" | tee -a "$GITHUB_ENV"
-          echo "LLVM_ENABLE_RUNTIMES=${{ matrix.llvm-configuration.llvm-enable-runtimes }}" | tee -a "$GITHUB_ENV"
-          echo "CONFIG_SUFFIX=${{ matrix.llvm-configuration.config-suffix }}" | tee -a "$GITHUB_ENV"
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v2
       - name: Set up Docker Buildx
@@ -62,15 +52,13 @@ jobs:
         uses: docker/build-push-action@v3
         with:
           tags: |
-            ${{ env.DOCKERHUB_REPOSITORY }}:${{ env.LLVM_VERSION_MAJOR }}${{ env.CONFIG_SUFFIX }}-${{ env.BASE_IMAGE_TAG }}
-            ${{ env.DOCKERHUB_REPOSITORY }}:${{ env.LLVM_VERSION_MAJOR }}.${{ env.LLVM_VERSION_MINOR }}${{ env.CONFIG_SUFFIX }}-${{ env.BASE_IMAGE_TAG }}
-            ${{ env.DOCKERHUB_REPOSITORY }}:${{ env.LLVM_VERSION_MAJOR }}.${{ env.LLVM_VERSION_MINOR }}.${{ env.LLVM_VERSION_REVISION }}${{ env.CONFIG_SUFFIX }}-${{ env.BASE_IMAGE_TAG }}
+            ${{ env.DOCKERHUB_REPOSITORY }}:${{ env.LLVM_VERSION_MAJOR }}-${{ env.BASE_IMAGE_TAG }}
+            ${{ env.DOCKERHUB_REPOSITORY }}:${{ env.LLVM_VERSION_MAJOR }}.${{ env.LLVM_VERSION_MINOR }}-${{ env.BASE_IMAGE_TAG }}
+            ${{ env.DOCKERHUB_REPOSITORY }}:${{ env.LLVM_VERSION_MAJOR }}.${{ env.LLVM_VERSION_MINOR }}.${{ env.LLVM_VERSION_REVISION }}-${{ env.BASE_IMAGE_TAG }}
           platforms: ${{ env.PLATFORMS }}
           build-args: |
             BASE_IMAGE_TAG=${{ env.BASE_IMAGE_TAG }}
             BINUTILS_VERSION=${{ env.BINUTILS_VERSION }}
             CMAKE_VERSION=${{ env.CMAKE_VERSION }}
             LLVM_VERSION=${{ env.LLVM_VERSION }}
-            LLVM_ENABLE_PROJECTS=${{ env.LLVM_ENABLE_PROJECTS }}
-            LLVM_ENABLE_RUNTIMES=${{ env.LLVM_ENABLE_RUNTIMES }}
           push: true

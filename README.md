@@ -7,17 +7,15 @@ and Ubuntu releases.
 
 The ports are available as Docker images at
 [Docker Hub](https://hub.docker.com/r/zhongruoyu/llvm-ports). They also come
-with the Debian/Ubuntu release's default [GCC](https://gcc.gnu.org/), the
+with the Debian/Ubuntu release's default [GCC](https://gcc.gnu.org/), and the
 latest releases of [GNU Binutils](https://www.gnu.org/software/binutils/)
 (currently version 2.39) and [CMake](https://cmake.org/) (currently version
 3.24.2).
 
-The image tags are in the format of `version[-all]-codename`, where
-`version` is the LLVM release version, `codename` is the codename of the
-Debian/Ubuntu release, and `-all` is an optional suffix indicating the
-inclusion of additional LLVM subprojects (see below). For example, tag
-`15.0.1-jammy` refers to the image with LLVM 15.0.1 on Ubuntu 22.04 (Jammy
-Jellyfish).
+The image tags are in the format of `version-codename`, where `version` is the
+LLVM release version, and `codename` is the codename of the Debian/Ubuntu
+release. For example, tag `15.0.1-jammy` refers to the image with LLVM 15.0.1
+on Ubuntu 22.04 (Jammy Jellyfish).
 
 The following LLVM releases are available:
 
@@ -42,12 +40,11 @@ The following Debian/Ubuntu releases are available:
 All images provide the [LLVM Core](https://llvm.org/) libraries,
 [Clang](https://clang.llvm.org/),
 [Extra Clang Tools](https://clang.llvm.org/extra/index.html),
-[LLD](https://lld.llvm.org/), [LLDB](https://lldb.llvm.org/),
-[compiler-rt](https://compiler-rt.llvm.org/),
+[Flang](https://flang.llvm.org/docs/), [LLD](https://lld.llvm.org/),
+[LLDB](https://lldb.llvm.org/), [MLIR](https://mlir.llvm.org/),
+[Polly](https://polly.llvm.org/), [compiler-rt](https://compiler-rt.llvm.org/),
 [libc++](https://libcxx.llvm.org/), [libc++ ABI](https://libcxxabi.llvm.org/),
-libunwind, and [OpenMP](https://openmp.llvm.org/). In addition, the `-all`
-variants also come with [Flang](https://flang.llvm.org/docs/),
-[MLIR](https://mlir.llvm.org/), and [Polly](https://polly.llvm.org/).
+libunwind, and [OpenMP](https://openmp.llvm.org/).
 
 See [here](https://hub.docker.com/r/zhongruoyu/llvm-ports/tags) for a complete
 list of tags.
