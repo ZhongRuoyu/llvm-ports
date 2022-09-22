@@ -25,6 +25,11 @@ jobs:
           - 13.0.1
           - 12.0.1
           - 11.1.0
+        llvm-configuration:
+          - cmake-build-type: Release
+          - cmake-build-type: MinSizeRel
+            extra-cmake-args: -DLLVM_BUILD_LLVM_DYLIB=ON -DLLVM_LINK_LLVM_DYLIB=ON
+            config-suffix: -slim
     env:
       DOCKERHUB_REPOSITORY: zhongruoyu/llvm-ports
       PLATFORMS: linux/amd64
@@ -39,6 +44,9 @@ jobs:
           echo "LLVM_VERSION_MAJOR=$(echo "${{ matrix.llvm-version }}" | cut -d '.' -f 1)" | tee -a "$GITHUB_ENV"
           echo "LLVM_VERSION_MINOR=$(echo "${{ matrix.llvm-version }}" | cut -d '.' -f 2)" | tee -a "$GITHUB_ENV"
           echo "LLVM_VERSION_REVISION=$(echo "${{ matrix.llvm-version }}" | cut -d '.' -f 3)" | tee -a "$GITHUB_ENV"
+          echo "CMAKE_BUILD_TYPE=${{ matrix.llvm-configuration.cmake-build-type }}" | tee -a "$GITHUB_ENV"
+          echo "EXTRA_CMAKE_ARGS=${{ matrix.llvm-configuration.extra-cmake-args }}" | tee -a "$GITHUB_ENV"
+          echo "CONFIG_SUFFIX=${{ matrix.llvm-configuration.config-suffix }}" | tee -a "$GITHUB_ENV"
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v2
       - name: Set up Docker Buildx
@@ -52,13 +60,15 @@ jobs:
         uses: docker/build-push-action@v3
         with:
           tags: |
-            ${{ env.DOCKERHUB_REPOSITORY }}:${{ env.LLVM_VERSION_MAJOR }}-${{ env.BASE_IMAGE_TAG }}
-            ${{ env.DOCKERHUB_REPOSITORY }}:${{ env.LLVM_VERSION_MAJOR }}.${{ env.LLVM_VERSION_MINOR }}-${{ env.BASE_IMAGE_TAG }}
-            ${{ env.DOCKERHUB_REPOSITORY }}:${{ env.LLVM_VERSION_MAJOR }}.${{ env.LLVM_VERSION_MINOR }}.${{ env.LLVM_VERSION_REVISION }}-${{ env.BASE_IMAGE_TAG }}
+            ${{ env.DOCKERHUB_REPOSITORY }}:${{ env.LLVM_VERSION_MAJOR }}${{ env.CONFIG_SUFFIX }}-${{ env.BASE_IMAGE_TAG }}
+            ${{ env.DOCKERHUB_REPOSITORY }}:${{ env.LLVM_VERSION_MAJOR }}.${{ env.LLVM_VERSION_MINOR }}${{ env.CONFIG_SUFFIX }}-${{ env.BASE_IMAGE_TAG }}
+            ${{ env.DOCKERHUB_REPOSITORY }}:${{ env.LLVM_VERSION_MAJOR }}.${{ env.LLVM_VERSION_MINOR }}.${{ env.LLVM_VERSION_REVISION }}${{ env.CONFIG_SUFFIX }}-${{ env.BASE_IMAGE_TAG }}
           platforms: ${{ env.PLATFORMS }}
           build-args: |
             BASE_IMAGE_TAG=${{ env.BASE_IMAGE_TAG }}
             BINUTILS_VERSION=${{ env.BINUTILS_VERSION }}
             CMAKE_VERSION=${{ env.CMAKE_VERSION }}
             LLVM_VERSION=${{ env.LLVM_VERSION }}
+            CMAKE_BUILD_TYPE=${{ env.CMAKE_BUILD_TYPE }}
+            EXTRA_CMAKE_ARGS=${{ env.EXTRA_CMAKE_ARGS }}
           push: true

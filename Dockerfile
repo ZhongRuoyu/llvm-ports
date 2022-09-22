@@ -66,6 +66,9 @@ RUN set -ex; \
 ARG LLVM_VERSION
 ENV LLVM_VERSION ${LLVM_VERSION}
 
+ARG CMAKE_BUILD_TYPE
+ARG EXTRA_CMAKE_ARGS
+
 RUN set -ex; \
     \
     curl -fL "https://github.com/llvm/llvm-project/releases/download/llvmorg-${LLVM_VERSION}/llvm-project-${LLVM_VERSION}.src.tar.xz.sig" -o 'llvm-project.tar.xz.sig'; \
@@ -88,11 +91,12 @@ RUN set -ex; \
     cd "$dir"; \
     \
     cmake \
-        -DCMAKE_BUILD_TYPE=Release \
+        -DCMAKE_BUILD_TYPE="${CMAKE_BUILD_TYPE}" \
         -DLLVM_ENABLE_PROJECTS="clang;clang-tools-extra;flang;lld;lldb;mlir;polly" \
         -DLLVM_ENABLE_RUNTIMES="compiler-rt;libcxx;libcxxabi;libunwind;openmp" \
         # https://github.com/llvm/llvm-project/issues/55517
         -DCOMPILER_RT_DEFAULT_TARGET_ONLY=ON \
+        ${EXTRA_CMAKE_ARGS} \
         /usr/src/llvm-project/llvm \
     ; \
     cmake --build . -j "$(nproc)"; \
