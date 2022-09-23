@@ -80,6 +80,7 @@ RUN set -ex; \
     \
     cd /usr/src/llvm-project; \
     if [ "$(echo "${LLVM_VERSION}" | cut -d '.' -f 1)" -lt 12 ]; then \
+        # [nfc] Fix missing include
         curl -fL "https://github.com/llvm/llvm-project/commit/b498303066a63a203d24f739b2d2e0e56dca70d1.patch" | git apply; \
     fi; \
     \
