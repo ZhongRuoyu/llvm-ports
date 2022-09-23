@@ -42,9 +42,9 @@ The following Debian/Ubuntu releases are available:
 All images provide the [LLVM Core](https://llvm.org/) libraries,
 [Clang](https://clang.llvm.org/),
 [Extra Clang Tools](https://clang.llvm.org/extra/index.html),
-[Flang](https://flang.llvm.org/docs/), [LLD](https://lld.llvm.org/),
-[LLDB](https://lldb.llvm.org/), [MLIR](https://mlir.llvm.org/),
-[Polly](https://polly.llvm.org/), [compiler-rt](https://compiler-rt.llvm.org/),
+[LLD](https://lld.llvm.org/), [LLDB](https://lldb.llvm.org/),
+[MLIR](https://mlir.llvm.org/), [Polly](https://polly.llvm.org/),
+[compiler-rt](https://compiler-rt.llvm.org/),
 [libc++](https://libcxx.llvm.org/), [libc++ ABI](https://libcxxabi.llvm.org/),
 libunwind, and [OpenMP](https://openmp.llvm.org/).
 
