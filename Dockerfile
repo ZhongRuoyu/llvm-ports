@@ -103,9 +103,9 @@ RUN set -ex; \
     rm -rf "$dir" /usr/src/llvm-project
 
 RUN set -ex; \
-    if [ -d '/usr/local/lib/x86_64-unknown-linux-gnu/c++' ]; then \
-        echo '/usr/local/lib/x86_64-unknown-linux-gnu/c++' > /etc/ld.so.conf.d/000-libc++.conf; \
+    if [ -d "/usr/local/lib/$(llvm-config --host-target)/c++" ]; then \
+        echo "/usr/local/lib/$(llvm-config --host-target)/c++" > /etc/ld.so.conf.d/000-libc++.conf; \
     else \
-        echo '/usr/local/lib/x86_64-unknown-linux-gnu' > /etc/ld.so.conf.d/000-libc++.conf; \
+        echo "/usr/local/lib/$(llvm-config --host-target)" > /etc/ld.so.conf.d/000-libc++.conf; \
     fi; \
     ldconfig -v
