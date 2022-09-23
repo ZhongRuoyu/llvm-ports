@@ -26,9 +26,9 @@ jobs:
           - 12.0.1
           - 11.1.0
         llvm-configuration:
-          - cmake-build-type: Release
-          - cmake-build-type: MinSizeRel
-            extra-cmake-args: -DLLVM_LINK_LLVM_DYLIB=ON
+          - extra-cmake-args: ""
+            config-suffix: ""
+          - extra-cmake-args: -DLLVM_LINK_LLVM_DYLIB=ON
             config-suffix: -slim
     env:
       DOCKERHUB_REPOSITORY: zhongruoyu/llvm-ports
@@ -44,7 +44,6 @@ jobs:
           echo "LLVM_VERSION_MAJOR=$(echo "${{ matrix.llvm-version }}" | cut -d '.' -f 1)" | tee -a "$GITHUB_ENV"
           echo "LLVM_VERSION_MINOR=$(echo "${{ matrix.llvm-version }}" | cut -d '.' -f 2)" | tee -a "$GITHUB_ENV"
           echo "LLVM_VERSION_REVISION=$(echo "${{ matrix.llvm-version }}" | cut -d '.' -f 3)" | tee -a "$GITHUB_ENV"
-          echo "CMAKE_BUILD_TYPE=${{ matrix.llvm-configuration.cmake-build-type }}" | tee -a "$GITHUB_ENV"
           echo "EXTRA_CMAKE_ARGS=${{ matrix.llvm-configuration.extra-cmake-args }}" | tee -a "$GITHUB_ENV"
           echo "CONFIG_SUFFIX=${{ matrix.llvm-configuration.config-suffix }}" | tee -a "$GITHUB_ENV"
       - name: Set up QEMU
@@ -69,6 +68,5 @@ jobs:
             BINUTILS_VERSION=${{ env.BINUTILS_VERSION }}
             CMAKE_VERSION=${{ env.CMAKE_VERSION }}
             LLVM_VERSION=${{ env.LLVM_VERSION }}
-            CMAKE_BUILD_TYPE=${{ env.CMAKE_BUILD_TYPE }}
             EXTRA_CMAKE_ARGS=${{ env.EXTRA_CMAKE_ARGS }}
           push: true

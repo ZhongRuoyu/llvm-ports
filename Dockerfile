@@ -66,7 +66,6 @@ RUN set -ex; \
 ARG LLVM_VERSION
 ENV LLVM_VERSION ${LLVM_VERSION}
 
-ARG CMAKE_BUILD_TYPE
 ARG EXTRA_CMAKE_ARGS
 
 RUN set -ex; \
@@ -88,7 +87,7 @@ RUN set -ex; \
     cd "$dir"; \
     \
     cmake \
-        -DCMAKE_BUILD_TYPE="${CMAKE_BUILD_TYPE}" \
+        -DCMAKE_BUILD_TYPE=Release \
         -DLLVM_ENABLE_PROJECTS="clang;clang-tools-extra;lld;lldb;mlir;polly" \
         -DLLVM_ENABLE_RUNTIMES="compiler-rt;libcxx;libcxxabi;libunwind;openmp" \
         -DLLVM_BUILD_LLVM_DYLIB=ON \
