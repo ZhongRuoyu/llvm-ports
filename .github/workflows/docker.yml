@@ -34,7 +34,7 @@ jobs:
       DOCKERHUB_REPOSITORY: zhongruoyu/llvm-ports
       PLATFORMS: linux/amd64
       BINUTILS_VERSION: 2.39
-      CMAKE_VERSION: 3.24.2
+      CMAKE_VERSION: 3.24.3
     runs-on: ubuntu-latest
     steps:
       - name: Set environment variables
