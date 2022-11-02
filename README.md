@@ -15,7 +15,7 @@ latest releases of [GNU Binutils](https://www.gnu.org/software/binutils/)
 The image tags are in the format of `version[-variant]-codename`, where
 `version` is the LLVM release version, `codename` is the codename of the
 Debian/Ubuntu release, and `variant` is an optional variant identifier (see
-below). For example, tag `15.0.3-jammy` refers to the image with LLVM 15.0.3 on
+below). For example, tag `15.0.4-jammy` refers to the image with LLVM 15.0.4 on
 Ubuntu 22.04 (Jammy Jellyfish), and tag `14-slim-bullseye` refers to the "slim"
 variant of the image with the latest LLVM 14 release on Debian 11 (Bullseye).
 
@@ -23,7 +23,7 @@ The following LLVM releases are available:
 
 | LLVM release | versions as appeared in tags |
 | ------------ | ---------------------------- |
-| LLVM 15.0.3  | `15`, `15.0`, `15.0.3`       |
+| LLVM 15.0.4  | `15`, `15.0`, `15.0.4`       |
 | LLVM 14.0.6  | `14`, `14.0`, `14.0.6`       |
 | LLVM 13.0.1  | `13`, `13.0`, `13.0.1`       |
 | LLVM 12.0.1  | `12`, `12.0`, `12.0.1`       |
