@@ -43,13 +43,15 @@ jobs:
     steps:
       - name: Set environment variables
         run: |
-          echo "BASE_IMAGE_TAG=${{ matrix.base-image-tag }}" | tee -a "$GITHUB_ENV"
-          echo "LLVM_VERSION=${{ matrix.llvm-version }}" | tee -a "$GITHUB_ENV"
-          echo "LLVM_VERSION_MAJOR=$(echo "${{ matrix.llvm-version }}" | cut -d '.' -f 1)" | tee -a "$GITHUB_ENV"
-          echo "LLVM_VERSION_MINOR=$(echo "${{ matrix.llvm-version }}" | cut -d '.' -f 2)" | tee -a "$GITHUB_ENV"
-          echo "LLVM_VERSION_REVISION=$(echo "${{ matrix.llvm-version }}" | cut -d '.' -f 3)" | tee -a "$GITHUB_ENV"
-          echo "EXTRA_CMAKE_ARGS=${{ matrix.llvm-configuration.extra-cmake-args }}" | tee -a "$GITHUB_ENV"
-          echo "CONFIG_SUFFIX=${{ matrix.llvm-configuration.config-suffix }}" | tee -a "$GITHUB_ENV"
+          cat <<EOF | tee -a "$GITHUB_ENV"
+          BASE_IMAGE_TAG=${{ matrix.base-image-tag }}
+          LLVM_VERSION=${{ matrix.llvm-version }}
+          LLVM_VERSION_MAJOR=$(echo "${{ matrix.llvm-version }}" | cut -d '.' -f 1)
+          LLVM_VERSION_MINOR=$(echo "${{ matrix.llvm-version }}" | cut -d '.' -f 2)
+          LLVM_VERSION_REVISION=$(echo "${{ matrix.llvm-version }}" | cut -d '.' -f 3)
+          EXTRA_CMAKE_ARGS=${{ matrix.llvm-configuration.extra-cmake-args }}
+          CONFIG_SUFFIX=${{ matrix.llvm-configuration.config-suffix }}
+          EOF
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v2
       - name: Set up Docker Buildx
