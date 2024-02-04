@@ -40,7 +40,7 @@ jobs:
     env:
       DOCKERHUB_REPOSITORY: zhongruoyu/llvm-ports
       PLATFORMS: linux/amd64
-      BINUTILS_VERSION: "2.41"
+      BINUTILS_VERSION: "2.42"
       CMAKE_VERSION: "3.28.1"
     runs-on: ubuntu-latest
     steps:
