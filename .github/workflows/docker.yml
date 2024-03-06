@@ -25,6 +25,7 @@ jobs:
           - focal
           - bionic
         llvm-version:
+          - "18.1.0"
           - "17.0.6"
           - "16.0.6"
           - "15.0.7"
