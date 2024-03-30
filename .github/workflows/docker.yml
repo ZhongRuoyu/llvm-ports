@@ -40,7 +40,7 @@ jobs:
       DOCKERHUB_REPOSITORY: zhongruoyu/llvm-ports
       PLATFORMS: linux/amd64
       BINUTILS_VERSION: "2.42"
-      CMAKE_VERSION: "3.28.4"
+      CMAKE_VERSION: "3.29.0"
     name: >
       ${{ matrix.llvm-version }} - ${{ matrix.base-image-tag }}
       ${{ matrix.llvm-configuration && format('- {0}', matrix.llvm-configuration) || '' }}
