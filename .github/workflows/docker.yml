@@ -44,6 +44,10 @@ jobs:
       CMAKE_VERSION: "3.28.3"
     runs-on: ubuntu-latest
     steps:
+      - name: Free disk space
+        run: |
+          sudo rm -rf \
+            /usr/local/lib/android
       - name: Set environment variables
         run: |
           cat <<EOF | tee -a "$GITHUB_ENV"
