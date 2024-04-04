@@ -91,6 +91,14 @@ RUN set -ex; \
         # [nfc] Fix missing include
         curl -fL "https://github.com/llvm/llvm-project/commit/b498303066a63a203d24f739b2d2e0e56dca70d1.patch" | git apply; \
     fi; \
+    if [ "$(echo "${LLVM_VERSION}" | cut -d '.' -f 1)" = 17 ]; then \
+        # Extend GCC workaround to GCC < 8.4 for llvm::iterator_range ctor (#82643)
+        curl -fL "https://github.com/llvm/llvm-project/commit/7f71fa909a10be182b82b9dfaf0fade6eb84796c.patch" | git apply; \
+    fi; \
+    if [ "$(echo "${LLVM_VERSION}" | cut -d '.' -f 1)" = 18 ]; then \
+        # Fix remaining build failures with GCC 8.3 (#83266)
+        curl -fL "https://github.com/llvm/llvm-project/commit/a9304edf20756dd63f896a98bad89e9eac54aebd.patch" | git apply; \
+    fi; \
     \
     dir="$(mktemp -d)"; \
     cd "$dir"; \
