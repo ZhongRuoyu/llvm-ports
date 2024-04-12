@@ -117,6 +117,7 @@ RUN set -ex; \
     cmake --build . --target install; \
     \
     cd ..; \
+    \
     rm -rf "$dir" /usr/src/llvm-project
 
 RUN set -ex; \
