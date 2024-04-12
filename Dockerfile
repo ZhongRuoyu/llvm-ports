@@ -53,11 +53,23 @@ RUN set -ex; \
     \
     curl -fL "https://github.com/Kitware/CMake/releases/download/v${CMAKE_VERSION}/cmake-${CMAKE_VERSION}-SHA-256.txt.asc" -O; \
     curl -fL "https://github.com/Kitware/CMake/releases/download/v${CMAKE_VERSION}/cmake-${CMAKE_VERSION}-SHA-256.txt" -O; \
-    curl -fL "https://github.com/Kitware/CMake/releases/download/v${CMAKE_VERSION}/cmake-${CMAKE_VERSION}-linux-x86_64.tar.gz" -O; \
+    curl -fL "https://github.com/Kitware/CMake/releases/download/v${CMAKE_VERSION}/cmake-${CMAKE_VERSION}.tar.gz" -O; \
     gpg --batch --verify "cmake-${CMAKE_VERSION}-SHA-256.txt.asc" "cmake-${CMAKE_VERSION}-SHA-256.txt"; \
     sha256sum -c --ignore-missing "cmake-${CMAKE_VERSION}-SHA-256.txt"; \
-    tar -xf "cmake-${CMAKE_VERSION}-linux-x86_64.tar.gz" -C /usr/local --strip-components=1; \
-    rm "cmake-${CMAKE_VERSION}"*
+    mkdir -p /usr/src/cmake; \
+    tar -xf "cmake-${CMAKE_VERSION}.tar.gz" -C /usr/src/cmake --strip-components=1; \
+    rm "cmake-${CMAKE_VERSION}"*; \
+    \
+    dir="$(mktemp -d)"; \
+    cd "$dir"; \
+    \
+    /usr/src/cmake/bootstrap --parallel="$(nproc)"; \
+    make -j "$(nproc)"; \
+    make install; \
+    \
+    cd ..; \
+    \
+    rm -rf "$dir" /usr/src/cmake
 
 ENV GPG_KEYS \
 # 4096R/345AD05D 2015-01-20 Hans Wennborg <hans@chromium.org>
