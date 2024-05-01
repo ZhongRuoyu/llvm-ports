@@ -103,6 +103,13 @@ RUN set -ex; \
         # [nfc] Fix missing include
         curl -fL "https://github.com/llvm/llvm-project/commit/b498303066a63a203d24f739b2d2e0e56dca70d1.patch" | git apply; \
     fi; \
+    if [ "$(echo "${LLVM_VERSION}" | cut -d '.' -f 1)" -lt 14 ] || \
+       [ "$(echo "${LLVM_VERSION}" | cut -d '.' -f 1)" = 14 -a \
+         "$(echo "${LLVM_VERSION}" | cut -d '.' -f 2)" = 0 -a \
+         "$(echo "${LLVM_VERSION}" | cut -d '.' -f 3)" -lt 5 ]; then \
+        # [Support] Add missing <cstdint> header to Signals.h
+        curl -fL "https://github.com/llvm/llvm-project/commit/ff1681ddb303223973653f7f5f3f3435b48a1983.patch" | git apply; \
+    fi; \
     if [ "$(echo "${LLVM_VERSION}" | cut -d '.' -f 1)" = 17 ]; then \
         # Extend GCC workaround to GCC < 8.4 for llvm::iterator_range ctor (#82643)
         curl -fL "https://github.com/llvm/llvm-project/commit/7f71fa909a10be182b82b9dfaf0fade6eb84796c.patch" | git apply; \
