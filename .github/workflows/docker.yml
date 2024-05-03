@@ -30,6 +30,7 @@ jobs:
           - bookworm
           - bullseye
           - buster
+          - noble
           - jammy
           - focal
           - bionic
