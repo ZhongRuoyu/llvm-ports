@@ -25,7 +25,6 @@ jobs:
           - "14.0.6"
           - "13.0.1"
           - "12.0.1"
-          - "11.1.0"
         base-image-tag:
           - bookworm
           - bullseye
