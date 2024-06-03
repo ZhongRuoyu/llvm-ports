@@ -10,7 +10,7 @@ The ports are available as Docker images at
 with the Debian/Ubuntu release's default [GCC](https://gcc.gnu.org/), and the
 latest releases of [GNU Binutils](https://www.gnu.org/software/binutils/)
 (currently version 2.42) and [CMake](https://cmake.org/) (currently version
-3.29.3).
+3.29.4).
 
 The image tags are in the format of `version[-variant]-codename`, where
 `version` is the LLVM release version, `codename` is the codename of the
