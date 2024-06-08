@@ -18,7 +18,7 @@ jobs:
       fail-fast: false
       matrix:
         llvm-version:
-          - "18.1.6"
+          - "18.1.7"
           - "17.0.6"
           - "16.0.6"
           - "15.0.7"
