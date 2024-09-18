@@ -29,11 +29,9 @@ jobs:
         base-image-tag:
           - bookworm
           - bullseye
-          - buster
           - noble
           - jammy
           - focal
-          - bionic
         llvm-configuration:
           - ""
           - slim
