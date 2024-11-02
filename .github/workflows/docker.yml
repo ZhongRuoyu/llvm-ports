@@ -70,7 +70,7 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
       - name: Build and push Docker images
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         with:
           tags: |
             ${{ env.DOCKERHUB_REPOSITORY }}:${{ env.LLVM_VERSION_MAJOR }}${{ env.CONFIG_SUFFIX }}-${{ env.BASE_IMAGE_TAG }}
