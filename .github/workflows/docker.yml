@@ -9,8 +9,12 @@ on:
     - cron: "0 0 1 * *"
 
 concurrency:
-  group: docker
+  group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
+
+env:
+  BINUTILS_VERSION: "2.43.1"
+  CMAKE_VERSION: "3.30.5"
 
 jobs:
   docker:
@@ -35,48 +39,40 @@ jobs:
         llvm-configuration:
           - ""
           - slim
-    env:
-      DOCKERHUB_REPOSITORY: zhongruoyu/llvm-ports
-      PLATFORMS: linux/amd64
-      BINUTILS_VERSION: "2.43.1"
-      CMAKE_VERSION: "3.30.5"
     name: >
       ${{ matrix.llvm-version }} - ${{ matrix.base-image-tag }}
-      ${{ matrix.llvm-configuration && format('- {0}', matrix.llvm-configuration) || '' }}
+      ${{ matrix.llvm-configuration && format(' ({0})', matrix.llvm-configuration) || '' }}
+    env:
+      BASE_IMAGE_TAG: ${{ matrix.base-image-tag }}
+      LLVM_VERSION: ${{ matrix.llvm-version }}
+      CONFIG_SUFFIX: ${{ matrix.llvm-configuration == 'slim' && '-slim' || '' }}
+      EXTRA_CMAKE_ARGS: ${{ matrix.llvm-configuration == 'slim' && '-DLLVM_LINK_LLVM_DYLIB=ON' || '' }}
     runs-on: ubuntu-latest
     steps:
       - name: Free disk space
         run: |
           sudo rm -rf \
             /usr/local/lib/android
-      - name: Set environment variables
+      - name: Determine build attributes
         run: |
           cat <<EOF | tee -a "$GITHUB_ENV"
-          BASE_IMAGE_TAG=${{ matrix.base-image-tag }}
-          LLVM_VERSION=${{ matrix.llvm-version }}
-          LLVM_VERSION_MAJOR=$(echo "${{ matrix.llvm-version }}" | cut -d '.' -f 1)
-          LLVM_VERSION_MINOR=$(echo "${{ matrix.llvm-version }}" | cut -d '.' -f 2)
-          LLVM_VERSION_REVISION=$(echo "${{ matrix.llvm-version }}" | cut -d '.' -f 3)
-          EXTRA_CMAKE_ARGS=${{ matrix.llvm-configuration == 'slim' && '-DLLVM_LINK_LLVM_DYLIB=ON' || '' }}
-          CONFIG_SUFFIX=${{ matrix.llvm-configuration == 'slim' && '-slim' || '' }}
+          LLVM_VERSION_MAJOR=$(echo "${LLVM_VERSION}" | cut -d '.' -f 1)
+          LLVM_VERSION_MAJOR_MINOR=$(echo "${LLVM_VERSION}" | cut -d '.' -f 1-2)
           EOF
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
-      - name: Login to DockerHub
+      - name: Login to Docker Hub
         uses: docker/login-action@v3
         with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          username: zhongruoyu
           password: ${{ secrets.DOCKERHUB_TOKEN }}
       - name: Build and push Docker images
         uses: docker/build-push-action@v6
         with:
           tags: |
-            ${{ env.DOCKERHUB_REPOSITORY }}:${{ env.LLVM_VERSION_MAJOR }}${{ env.CONFIG_SUFFIX }}-${{ env.BASE_IMAGE_TAG }}
-            ${{ env.DOCKERHUB_REPOSITORY }}:${{ env.LLVM_VERSION_MAJOR }}.${{ env.LLVM_VERSION_MINOR }}${{ env.CONFIG_SUFFIX }}-${{ env.BASE_IMAGE_TAG }}
-            ${{ env.DOCKERHUB_REPOSITORY }}:${{ env.LLVM_VERSION_MAJOR }}.${{ env.LLVM_VERSION_MINOR }}.${{ env.LLVM_VERSION_REVISION }}${{ env.CONFIG_SUFFIX }}-${{ env.BASE_IMAGE_TAG }}
-          platforms: ${{ env.PLATFORMS }}
+            zhongruoyu/llvm-ports:${{ env.LLVM_VERSION }}${{ env.CONFIG_SUFFIX }}-${{ env.BASE_IMAGE_TAG }}
+            zhongruoyu/llvm-ports:${{ env.LLVM_VERSION_MAJOR_MINOR }}${{ env.CONFIG_SUFFIX }}-${{ env.BASE_IMAGE_TAG }}
+            zhongruoyu/llvm-ports:${{ env.LLVM_VERSION_MAJOR }}${{ env.CONFIG_SUFFIX }}-${{ env.BASE_IMAGE_TAG }}
           build-args: |
             BASE_IMAGE_TAG=${{ env.BASE_IMAGE_TAG }}
             BINUTILS_VERSION=${{ env.BINUTILS_VERSION }}
