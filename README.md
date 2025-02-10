@@ -9,7 +9,7 @@ The ports are available as Docker images at
 [Docker Hub](https://hub.docker.com/r/zhongruoyu/llvm-ports). They also come
 with the Debian/Ubuntu release's default [GCC](https://gcc.gnu.org/), and the
 latest releases of [GNU Binutils](https://www.gnu.org/software/binutils/)
-(currently version 2.43.1) and [CMake](https://cmake.org/) (currently version
+(currently version 2.44) and [CMake](https://cmake.org/) (currently version
 3.31.5).
 
 The image tags are in the format of `version[-variant]-codename`, where
