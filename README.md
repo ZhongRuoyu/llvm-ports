@@ -23,6 +23,7 @@ The following LLVM releases are available:
 
 | LLVM release | versions as appeared in tags |
 | ------------ | ---------------------------- |
+| LLVM 20.1.8  | `20`, `20.1`, `20.1.8`       |
 | LLVM 19.1.7  | `19`, `19.1`, `19.1.7`       |
 | LLVM 18.1.8  | `18`, `18.1`, `18.1.8`       |
 | LLVM 17.0.6  | `17`, `17.0`, `17.0.6`       |
