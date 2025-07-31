@@ -14,7 +14,7 @@ concurrency:
 
 env:
   BINUTILS_VERSION: "2.45"
-  CMAKE_VERSION: "3.31.5"
+  CMAKE_VERSION: "4.0.3"
 
 jobs:
   docker:
