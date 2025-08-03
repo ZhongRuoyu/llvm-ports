@@ -17,7 +17,81 @@ env:
   CMAKE_VERSION: "4.0.3"
 
 jobs:
-  docker:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        llvm-version:
+          - "20.1.8"
+          - "19.1.7"
+          - "18.1.8"
+          - "17.0.6"
+          - "16.0.6"
+          - "15.0.7"
+          - "14.0.6"
+          - "13.0.1"
+          - "12.0.1"
+        base-image-tag:
+          - bookworm
+          - bullseye
+          - noble
+          - jammy
+          - focal
+        llvm-configuration:
+          - ""
+          - slim
+        arch:
+          - x86_64
+          - aarch64
+    name: >
+      Build ${{ matrix.llvm-version }} - ${{ matrix.base-image-tag }}
+      ${{ matrix.llvm-configuration && format(' ({0})', matrix.llvm-configuration) || '' }}
+      (${{ matrix.arch }})
+    env:
+      LLVM_VERSION: ${{ matrix.llvm-version }}
+      BASE_IMAGE_TAG: ${{ matrix.base-image-tag }}
+      ARCH: ${{ matrix.arch }}
+    runs-on: ${{ matrix.arch == 'aarch64' && 'ubuntu-24.04-arm' || 'ubuntu-24.04' }}
+    steps:
+      - name: Free disk space
+        run: |
+          sudo rm -rf \
+            /usr/local/lib/android
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: zhongruoyu
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Build and push Docker image by digest
+        id: build
+        uses: docker/build-push-action@v6
+        with:
+          platforms: linux/${{ matrix.arch }}
+          build-args: |
+            BASE_IMAGE_TAG=${{ env.BASE_IMAGE_TAG }}
+            BINUTILS_VERSION=${{ env.BINUTILS_VERSION }}
+            CMAKE_VERSION=${{ env.CMAKE_VERSION }}
+            LLVM_VERSION=${{ env.LLVM_VERSION }}
+            EXTRA_CMAKE_ARGS=${{ matrix.llvm-configuration == 'slim' && '-DLLVM_LINK_LLVM_DYLIB=ON' || '' }}
+          outputs: type=image,name=zhongruoyu/llvm-ports,name-canonical=true,push=true,push-by-digest=true
+      - name: Export digest
+        run: |
+          mkdir -p "$RUNNER_TEMP"/digests
+          echo "${DIGEST#sha256:}" > "$RUNNER_TEMP/digests/$LLVM_VERSION$CONFIG_SUFFIX-$BASE_IMAGE_TAG-$ARCH"
+        env:
+          DIGEST: ${{ steps.build.outputs.digest }}
+          ARCH: ${{ matrix.arch }}
+          CONFIG_SUFFIX: ${{ matrix.llvm-configuration == 'slim' && '-slim' || '' }}
+      - name: Upload digest
+        uses: actions/upload-artifact@v4
+        with:
+          name: digest-${{ matrix.llvm-version }}${{ matrix.llvm-configuration == 'slim' && '-slim' || '' }}-${{ matrix.base-image-tag }}-${{ matrix.arch }}
+          path: ${{ runner.temp }}/digests/*
+
+  merge:
+    needs: build
     strategy:
       fail-fast: false
       matrix:
@@ -41,25 +115,13 @@ jobs:
           - ""
           - slim
     name: >
-      ${{ matrix.llvm-version }} - ${{ matrix.base-image-tag }}
+      Merge ${{ matrix.llvm-version }} - ${{ matrix.base-image-tag }}
       ${{ matrix.llvm-configuration && format(' ({0})', matrix.llvm-configuration) || '' }}
     env:
-      BASE_IMAGE_TAG: ${{ matrix.base-image-tag }}
       LLVM_VERSION: ${{ matrix.llvm-version }}
-      CONFIG_SUFFIX: ${{ matrix.llvm-configuration == 'slim' && '-slim' || '' }}
-      EXTRA_CMAKE_ARGS: ${{ matrix.llvm-configuration == 'slim' && '-DLLVM_LINK_LLVM_DYLIB=ON' || '' }}
+      BASE_IMAGE_TAG: ${{ matrix.base-image-tag }}
     runs-on: ubuntu-latest
     steps:
-      - name: Free disk space
-        run: |
-          sudo rm -rf \
-            /usr/local/lib/android
-      - name: Determine build attributes
-        run: |
-          cat <<EOF | tee -a "$GITHUB_ENV"
-          LLVM_VERSION_MAJOR=$(echo "${LLVM_VERSION}" | cut -d '.' -f 1)
-          LLVM_VERSION_MAJOR_MINOR=$(echo "${LLVM_VERSION}" | cut -d '.' -f 1-2)
-          EOF
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
       - name: Login to Docker Hub
@@ -67,17 +129,19 @@ jobs:
         with:
           username: zhongruoyu
           password: ${{ secrets.DOCKERHUB_TOKEN }}
-      - name: Build and push Docker images
-        uses: docker/build-push-action@v6
+      - name: Download digests
+        uses: actions/download-artifact@v4
         with:
-          tags: |
-            zhongruoyu/llvm-ports:${{ env.LLVM_VERSION }}${{ env.CONFIG_SUFFIX }}-${{ env.BASE_IMAGE_TAG }}
-            zhongruoyu/llvm-ports:${{ env.LLVM_VERSION_MAJOR_MINOR }}${{ env.CONFIG_SUFFIX }}-${{ env.BASE_IMAGE_TAG }}
-            zhongruoyu/llvm-ports:${{ env.LLVM_VERSION_MAJOR }}${{ env.CONFIG_SUFFIX }}-${{ env.BASE_IMAGE_TAG }}
-          build-args: |
-            BASE_IMAGE_TAG=${{ env.BASE_IMAGE_TAG }}
-            BINUTILS_VERSION=${{ env.BINUTILS_VERSION }}
-            CMAKE_VERSION=${{ env.CMAKE_VERSION }}
-            LLVM_VERSION=${{ env.LLVM_VERSION }}
-            EXTRA_CMAKE_ARGS=${{ env.EXTRA_CMAKE_ARGS }}
-          push: true
+          path: ${{ runner.temp }}/digests
+          pattern: digest-${{ matrix.llvm-version }}${{ matrix.llvm-configuration == 'slim' && '-slim' || '' }}-${{ matrix.base-image-tag }}-*
+          merge-multiple: true
+      - name: Create manifest list and push
+        run: |
+          docker buildx imagetools create \
+            --tag="zhongruoyu/llvm-ports:$LLVM_VERSION$CONFIG_SUFFIX-$BASE_IMAGE_TAG" \
+            --tag="zhongruoyu/llvm-ports:$(echo "$LLVM_VERSION" | cut -d '.' -f 1-2)$CONFIG_SUFFIX-$BASE_IMAGE_TAG" \
+            --tag="zhongruoyu/llvm-ports:$(echo "$LLVM_VERSION" | cut -d '.' -f 1)$CONFIG_SUFFIX-$BASE_IMAGE_TAG" \
+            zhongruoyu/llvm-ports@sha256:"$(cat "$RUNNER_TEMP/digests/$LLVM_VERSION$CONFIG_SUFFIX-$BASE_IMAGE_TAG-x86_64")" \
+            zhongruoyu/llvm-ports@sha256:"$(cat "$RUNNER_TEMP/digests/$LLVM_VERSION$CONFIG_SUFFIX-$BASE_IMAGE_TAG-aarch64")"
+        env:
+          CONFIG_SUFFIX: ${{ matrix.llvm-configuration == 'slim' && '-slim' || '' }}
