@@ -91,6 +91,13 @@ ARG EXTRA_CMAKE_ARGS
 
 RUN set -ex; \
     \
+    apt-get update; \
+    apt-get install -y --no-install-recommends \
+        python3 \
+        python3-setuptools \
+    ; \
+    rm -r /var/lib/apt/lists/*; \
+    \
     curl -fL "https://github.com/llvm/llvm-project/releases/download/llvmorg-${LLVM_VERSION}/llvm-project-${LLVM_VERSION}.src.tar.xz.sig" -o 'llvm-project.tar.xz.sig'; \
     curl -fL "https://github.com/llvm/llvm-project/releases/download/llvmorg-${LLVM_VERSION}/llvm-project-${LLVM_VERSION}.src.tar.xz" -o 'llvm-project.tar.xz'; \
     gpg --batch --verify llvm-project.tar.xz.sig llvm-project.tar.xz; \
