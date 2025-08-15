@@ -37,6 +37,7 @@ The following Debian/Ubuntu releases are available:
 
 | Release                        | codename as appeared in tags |
 | ------------------------------ | ---------------------------- |
+| Debian 13 (Trixie)             | `trixie`                     |
 | Debian 12 (Bookworm)           | `bookworm`                   |
 | Debian 11 (Bullseye)           | `bullseye`                   |
 | Ubuntu 24.04 (Noble Numbat)    | `noble`                      |
