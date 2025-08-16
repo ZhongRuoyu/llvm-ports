@@ -118,6 +118,8 @@ RUN set -ex; \
         curl -fL "https://github.com/llvm/llvm-project/commit/ff1681ddb303223973653f7f5f3f3435b48a1983.patch" | git apply; \
     fi; \
     if [ "$(echo "${LLVM_VERSION}" | cut -d '.' -f 1)" = 17 ]; then \
+        # [Clang] Fix build with GCC 14 on ARM
+        curl -fL "https://src.fedoraproject.org/rpms/clang/raw/f2215348e79ce1534141b0bbc5d4771ce580ddea/f/0001-Clang-Fix-build-with-GCC-14-on-ARM.patch" | git apply; \
         # Extend GCC workaround to GCC < 8.4 for llvm::iterator_range ctor (#82643)
         curl -fL "https://github.com/llvm/llvm-project/commit/7f71fa909a10be182b82b9dfaf0fade6eb84796c.patch" | git apply; \
     fi; \
