@@ -14,7 +14,7 @@ concurrency:
 
 env:
   BINUTILS_VERSION: "2.45"
-  CMAKE_VERSION: "4.1.0"
+  CMAKE_VERSION: "4.1.1"
 
 jobs:
   build:
