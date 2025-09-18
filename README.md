@@ -6,11 +6,12 @@ and Ubuntu releases.
 ## Images
 
 The ports are available as Docker images at
-[Docker Hub](https://hub.docker.com/r/zhongruoyu/llvm-ports). They also come
-with the Debian/Ubuntu release's default [GCC](https://gcc.gnu.org/), and the
-latest releases of [GNU Binutils](https://www.gnu.org/software/binutils/)
-(currently version 2.45) and [CMake](https://cmake.org/) (currently version
-4.1.1).
+[Docker Hub](https://hub.docker.com/r/zhongruoyu/llvm-ports) and
+[GitHub Container Registry](https://ghcr.io/zhongruoyu/llvm-ports).
+They also come with the Debian/Ubuntu release's default
+[GCC](https://gcc.gnu.org/), and the latest releases of
+[GNU Binutils](https://www.gnu.org/software/binutils/) (currently version 2.45)
+and [CMake](https://cmake.org/) (currently version 4.1.1).
 
 The image tags are in the format of `version[-variant]-codename`, where
 `version` is the LLVM release version, `codename` is the codename of the
@@ -59,9 +60,6 @@ by having LLVM and Clang libraries dynamically linked. This, however, also
 comes at the cost of a substantial performance penalty. See
 [here](https://llvm.org/docs/BuildingADistribution.html#general-distribution-guidance)
 for more details.
-
-See [here](https://hub.docker.com/r/zhongruoyu/llvm-ports/tags) for a complete
-list of tags.
 
 ## License
 
