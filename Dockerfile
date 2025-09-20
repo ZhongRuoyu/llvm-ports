@@ -67,7 +67,7 @@ RUN set -ex; \
   \
   /usr/src/cmake/bootstrap --parallel="$(nproc)"; \
   make -j "$(nproc)"; \
-  make install; \
+  make install/strip; \
   \
   cd ..; \
   \
@@ -146,7 +146,7 @@ RUN set -ex; \
     /usr/src/llvm-project/llvm \
   ; \
   cmake --build . -j "$(nproc)"; \
-  cmake --build . --target install; \
+  cmake --install . --strip; \
   \
   cd ..; \
   \
