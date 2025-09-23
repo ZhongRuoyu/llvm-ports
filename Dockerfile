@@ -140,6 +140,11 @@ RUN set -ex; \
     -DLLVM_ENABLE_PROJECTS="clang;clang-tools-extra;lld;lldb;mlir;polly" \
     -DLLVM_ENABLE_RUNTIMES="compiler-rt;libcxx;libcxxabi;libunwind;openmp" \
     -DLLVM_BUILD_LLVM_DYLIB=ON \
+    -DLLVM_INCLUDE_BENCHMARKS=OFF \
+    -DLLVM_INCLUDE_EXAMPLES=OFF \
+    -DLLVM_INCLUDE_TESTS=OFF \
+    -DLLVM_INCLUDE_TOOLS=ON \
+    -DLLVM_INCLUDE_UTILS=ON \
     # https://github.com/llvm/llvm-project/issues/55517
     -DCOMPILER_RT_DEFAULT_TARGET_ONLY=ON \
     ${EXTRA_CMAKE_ARGS} \
