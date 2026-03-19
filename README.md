@@ -42,10 +42,8 @@ The following Debian/Ubuntu releases are available:
 | ------------------------------ | ---------------------------- |
 | Debian 13 (Trixie)             | `trixie`                     |
 | Debian 12 (Bookworm)           | `bookworm`                   |
-| Debian 11 (Bullseye)           | `bullseye`                   |
 | Ubuntu 24.04 (Noble Numbat)    | `noble`                      |
 | Ubuntu 22.04 (Jammy Jellyfish) | `jammy`                      |
-| Ubuntu 20.04 (Focal Fossa)     | `focal`                      |
 
 All images provide the [LLVM Core](https://llvm.org/) libraries,
 [Clang](https://clang.llvm.org/),

@@ -32,10 +32,8 @@ jobs:
         base-image-tag:
           - trixie
           - bookworm
-          - bullseye
           - noble
           - jammy
-          - focal
         llvm-configuration:
           - ""
           - slim
