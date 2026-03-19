@@ -34,7 +34,6 @@ The following LLVM releases are available:
 | LLVM 15.0.7  | `15`, `15.0`, `15.0.7`       |
 | LLVM 14.0.6  | `14`, `14.0`, `14.0.6`       |
 | LLVM 13.0.1  | `13`, `13.0`, `13.0.1`       |
-| LLVM 12.0.1  | `12`, `12.0`, `12.0.1`       |
 
 The following Debian/Ubuntu releases are available:
 
