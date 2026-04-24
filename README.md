@@ -37,12 +37,13 @@ The following LLVM releases are available:
 
 The following Debian/Ubuntu releases are available:
 
-| Release                        | codename as appeared in tags |
-| ------------------------------ | ---------------------------- |
-| Debian 13 (Trixie)             | `trixie`                     |
-| Debian 12 (Bookworm)           | `bookworm`                   |
-| Ubuntu 24.04 (Noble Numbat)    | `noble`                      |
-| Ubuntu 22.04 (Jammy Jellyfish) | `jammy`                      |
+| Release                         | codename as appeared in tags |
+| ------------------------------- | ---------------------------- |
+| Debian 13 (Trixie)              | `trixie`                     |
+| Debian 12 (Bookworm)            | `bookworm`                   |
+| Ubuntu 26.04 (Resolute Raccoon) | `resolute`                   |
+| Ubuntu 24.04 (Noble Numbat)     | `noble`                      |
+| Ubuntu 22.04 (Jammy Jellyfish)  | `jammy`                      |
 
 All images provide the [LLVM Core](https://llvm.org/) libraries,
 [Clang](https://clang.llvm.org/),

@@ -1,0 +1,32 @@
+From 8cb80aabe53388350ac04089a97395209bbb62f0 Mon Sep 17 00:00:00 2001
+From: Christopher Di Bella <cjdb@google.com>
+Date: Wed, 2 Oct 2024 15:12:42 -0700
+Subject: [PATCH] adds missing header, removes Bazel unnecessary dependency
+ (#110932)
+
+The missing header is necessary to keep building with Bazel happy, and the dependency was erroneously added.
+
+diff --git a/mlir/include/mlir/Dialect/Affine/IR/ValueBoundsOpInterfaceImpl.h b/mlir/include/mlir/Dialect/Affine/IR/ValueBoundsOpInterfaceImpl.h
+index 451c466fa0c950174b03f409ec7c0a6ae746f9e2..642e99d963ef61deb5dcbd01631ac96a01428554 100644
+--- a/mlir/include/mlir/Dialect/Affine/IR/ValueBoundsOpInterfaceImpl.h
++++ b/mlir/include/mlir/Dialect/Affine/IR/ValueBoundsOpInterfaceImpl.h
+@@ -10,6 +10,7 @@
+ #define MLIR_DIALECT_AFFINE_IR_VALUEBOUNDSOPINTERFACEIMPL_H
+ 
+ #include "mlir/Support/LLVM.h"
++#include <cstdint>
+ 
+ namespace mlir {
+ class DialectRegistry;
+diff --git a/utils/bazel/llvm-project-overlay/mlir/BUILD.bazel b/utils/bazel/llvm-project-overlay/mlir/BUILD.bazel
+index 0d0224e6d68025298b7c56629c26b08804939d43..8cd6da45ce97875103c10210d89989b32d8cc0b6 100644
+--- a/utils/bazel/llvm-project-overlay/mlir/BUILD.bazel
++++ b/utils/bazel/llvm-project-overlay/mlir/BUILD.bazel
+@@ -3715,6 +3715,7 @@ cc_library(
+         ":BytecodeOpInterface",
+         ":DialectUtils",
+         ":IR",
++        ":MaskableOpInterface",
+         ":ShapedOpInterfaces",
+         ":SideEffectInterfaces",
+         ":ViewLikeInterface",

@@ -1,0 +1,20 @@
+From 20716b2fd1c0da69bfef808c86e59f027079f329 Mon Sep 17 00:00:00 2001
+From: Christopher Di Bella <cjdb@google.com>
+Date: Wed, 2 Oct 2024 15:12:42 -0700
+Subject: [PATCH] adds missing header, removes Bazel unnecessary dependency
+ (#110932)
+
+The missing header is necessary to keep building with Bazel happy, and the dependency was erroneously added.
+
+diff --git a/mlir/include/mlir/Dialect/Affine/IR/ValueBoundsOpInterfaceImpl.h b/mlir/include/mlir/Dialect/Affine/IR/ValueBoundsOpInterfaceImpl.h
+index 6e617ef40a53d7ddbe76c5200ea33583efddcf7b..1fe72ca916e5fe6ae55f92ebadbc2c2bf922e382 100644
+--- a/mlir/include/mlir/Dialect/Affine/IR/ValueBoundsOpInterfaceImpl.h
++++ b/mlir/include/mlir/Dialect/Affine/IR/ValueBoundsOpInterfaceImpl.h
+@@ -10,6 +10,7 @@
+ #define MLIR_DIALECT_AFFINE_IR_VALUEBOUNDSOPINTERFACEIMPL_H
+ 
+ #include "mlir/Support/LogicalResult.h"
++#include <cstdint>
+ 
+ namespace mlir {
+ class DialectRegistry;

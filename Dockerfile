@@ -37,7 +37,7 @@ RUN set -ex; \
   dir="$(mktemp -d)"; \
   cd "$dir"; \
   \
-  /usr/src/binutils/configure; \
+  /usr/src/binutils/configure CFLAGS="-Wno-error=discarded-qualifiers"; \
   make -j "$(nproc)"; \
   make install-strip; \
   \
@@ -94,6 +94,7 @@ ENV LLVM_VERSION="${LLVM_VERSION}"
 
 ARG EXTRA_CMAKE_ARGS
 
+COPY patches/llvm /usr/src/llvm-project/patches
 RUN set -ex; \
   \
   apt-get update; \
@@ -117,33 +118,96 @@ RUN set -ex; \
   rm llvm-project.tar.xz*; \
   \
   cd /usr/src/llvm-project; \
+  LLVM_VERSION_MAJOR="$(echo "$LLVM_VERSION" | cut -d '.' -f 1)"; \
+  LLVM_VERSION_MINOR="$(echo "$LLVM_VERSION" | cut -d '.' -f 2)"; \
+  LLVM_VERSION_PATCH="$(echo "$LLVM_VERSION" | cut -d '.' -f 3)"; \
   # [nfc] Fix missing include
   # https://github.com/llvm/llvm-project/commit/b498303066a63a203d24f739b2d2e0e56dca70d1
-  if [ "$(echo "${LLVM_VERSION}" | cut -d '.' -f 1)" -ge 8 -a \
-      "$(echo "${LLVM_VERSION}" | cut -d '.' -f 1)" -lt 12 ]; then \
+  if [ "$LLVM_VERSION_MAJOR" -ge 8 -a "$LLVM_VERSION_MAJOR" -lt 12 ]; then \
     curl -fL "https://github.com/llvm/llvm-project/commit/b498303066a63a203d24f739b2d2e0e56dca70d1.patch" | patch -p1; \
   fi; \
   # [Support] Add missing <cstdint> header to Signals.h
   # https://github.com/llvm/llvm-project/commit/ff1681ddb303223973653f7f5f3f3435b48a1983
-  if [ "$(echo "${LLVM_VERSION}" | cut -d '.' -f 1)" -lt 14 ] || \
-    [ "$(echo "${LLVM_VERSION}" | cut -d '.' -f 1)" -eq 14 -a \
-      "$(echo "${LLVM_VERSION}" | cut -d '.' -f 2)" -eq 0 -a \
-      "$(echo "${LLVM_VERSION}" | cut -d '.' -f 3)" -lt 5 ]; then \
+  if [ "$LLVM_VERSION_MAJOR" -lt 14 ] || \
+    [ "$LLVM_VERSION_MAJOR" -eq 14 -a "$LLVM_VERSION_MINOR" -eq 0 -a "$LLVM_VERSION_PATCH" -lt 5 ]; then \
     curl -fL "https://github.com/llvm/llvm-project/commit/ff1681ddb303223973653f7f5f3f3435b48a1983.patch" | patch -p1; \
   fi; \
+  # [sanitizer] Remove crypt and crypt_r interceptors
+  # https://github.com/llvm/llvm-project/commit/d7bead833631486e337e541e692d9b4a1ca14edd
+  if [ "$LLVM_VERSION_MAJOR" -ge 12 -a "$LLVM_VERSION_MAJOR" -lt 15 ]; then \
+    patch -p1 < patches/backports/12.0.1/compiler-rt-remove-crypt-and-crypt_r-interceptors.patch; \
+  elif [ "$LLVM_VERSION_MAJOR" -ge 15 -a "$LLVM_VERSION_MAJOR" -lt 17 ]; then \
+    curl -fL "https://github.com/llvm/llvm-project/commit/d7bead833631486e337e541e692d9b4a1ca14edd.patch" | patch -p1; \
+  fi; \
   # [Clang] Fix build with GCC 14 on ARM
-  if [ "$(echo "${LLVM_VERSION}" | cut -d '.' -f 1)" -eq 17 ]; then \
+  if [ "$LLVM_VERSION_MAJOR" -eq 17 ]; then \
     curl -fL "https://src.fedoraproject.org/rpms/clang/raw/f2215348e79ce1534141b0bbc5d4771ce580ddea/f/0001-Clang-Fix-build-with-GCC-14-on-ARM.patch" | patch -p1; \
   fi; \
   # Extend GCC workaround to GCC < 8.4 for llvm::iterator_range ctor (#82643)
   # https://github.com/llvm/llvm-project/commit/7f71fa909a10be182b82b9dfaf0fade6eb84796c
-  if [ "$(echo "${LLVM_VERSION}" | cut -d '.' -f 1)" -eq 17 ]; then \
+  if [ "$LLVM_VERSION_MAJOR" -eq 17 ]; then \
     curl -fL "https://github.com/llvm/llvm-project/commit/7f71fa909a10be182b82b9dfaf0fade6eb84796c.patch" | patch -p1; \
   fi; \
   # Fix remaining build failures with GCC 8.3 (#83266)
   # https://github.com/llvm/llvm-project/commit/a9304edf20756dd63f896a98bad89e9eac54aebd
-  if [ "$(echo "${LLVM_VERSION}" | cut -d '.' -f 1)" -eq 18 ]; then \
+  if [ "$LLVM_VERSION_MAJOR" -eq 18 ]; then \
     curl -fL "https://github.com/llvm/llvm-project/commit/a9304edf20756dd63f896a98bad89e9eac54aebd.patch" | patch -p1; \
+  fi; \
+  # [ADT] Add <cstdint> to SmallVector (#101761)
+  # https://github.com/llvm/llvm-project/commit/7e44305041d96b064c197216b931ae3917a34ac1
+  if [ "$LLVM_VERSION_MAJOR" -lt 19 ]; then \
+    curl -fL "https://github.com/llvm/llvm-project/commit/7e44305041d96b064c197216b931ae3917a34ac1.patch" | patch -p1; \
+  fi; \
+  # [AMDGPU] Include <cstdint> in AMDGPUMCTargetDesc (#101766)
+  # https://github.com/llvm/llvm-project/commit/8f39502b85d34998752193e85f36c408d3c99248
+  if [ "$LLVM_VERSION_MAJOR" -ge 12 -a "$LLVM_VERSION_MAJOR" -lt 19 ]; then \
+    curl -fL "https://github.com/llvm/llvm-project/commit/8f39502b85d34998752193e85f36c408d3c99248.patch" | patch -p1; \
+  fi; \
+  # [LLDB] Add <cstdint> to AddressableBits (#102110)
+  # https://github.com/llvm/llvm-project/commit/bb59f04e7e75dcbe39f1bf952304a157f0035314
+  if [ "$LLVM_VERSION_MAJOR" -eq 18 ]; then \
+    curl -fL "https://github.com/llvm/llvm-project/commit/bb59f04e7e75dcbe39f1bf952304a157f0035314.patch" | patch -p1; \
+  fi; \
+  # adds missing header, removes Bazel unnecessary dependency (#110932)
+  # https://github.com/llvm/llvm-project/commit/41eb186fbb024898bacc2577fa3b88db0510ba1f
+  if [ "$LLVM_VERSION_MAJOR" -eq 18 ]; then \
+    patch -p1 < patches/backports/18.1.8/mlir-include-cstdint.patch; \
+  elif [ "$LLVM_VERSION_MAJOR" -eq 19 ]; then \
+    patch -p1 < patches/backports/19.1.7/mlir-include-cstdint.patch; \
+  fi; \
+  # [MLIR] Add missing include (NFC)
+  # https://github.com/llvm/llvm-project/commit/101109fc5460d5bb9bb597c6ec77f998093a6687
+  if [ "$LLVM_VERSION_MAJOR" -ge 10 -a "$LLVM_VERSION_MAJOR" -lt 20 ]; then \
+    curl -fL "https://github.com/llvm/llvm-project/commit/101109fc5460d5bb9bb597c6ec77f998093a6687.patch" | patch -p1; \
+  fi; \
+  # Add missing include to X86MCTargetDesc.h (#123320)
+  # https://github.com/llvm/llvm-project/commit/7abf44069aec61eee147ca67a6333fc34583b524
+  if [ "$LLVM_VERSION_MAJOR" -ge 11 -a "$LLVM_VERSION_MAJOR" -lt 19 ]; then \
+    patch -p1 < patches/backports/11.1.0/llvm-include-cstdint.patch; \
+  elif [ "$LLVM_VERSION_MAJOR" -eq 19 ]; then \
+    curl -fL "https://github.com/llvm/llvm-project/commit/7abf44069aec61eee147ca67a6333fc34583b524.patch" | patch -p1; \
+  fi; \
+  # [sanitizer_common] Remove interceptors for deprecated struct termio (#137403)
+  # https://github.com/llvm/llvm-project/commit/59978b21ad9c65276ee8e14f26759691b8a65763
+  if [ "$LLVM_VERSION_MAJOR" -ge 12 -a "$LLVM_VERSION_MAJOR" -lt 20 ] || \
+    [ "$LLVM_VERSION_MAJOR" -eq 20 -a "$LLVM_VERSION_MINOR" -eq 1 -a "$LLVM_VERSION_PATCH" -lt 6 ]; then \
+    curl -fL "https://github.com/llvm/llvm-project/commit/59978b21ad9c65276ee8e14f26759691b8a65763.patch" | patch -p1; \
+  fi; \
+  # Remove reference to obsolete termio ioctls
+  # https://github.com/llvm/llvm-project/commit/c99b1bcd505064f2e086e6b1034ce0b0c91ea5b9
+  if [ "$LLVM_VERSION_MAJOR" -ge 12 -a "$LLVM_VERSION_MAJOR" -lt 21 ]; then \
+    patch -p1 < patches/backports/12.0.1/compiler-rt-termio-ioctls.patch; \
+  fi; \
+  if [ "$LLVM_VERSION_MAJOR" -ge 13 ]; then \
+    patch -p1 < patches/13.0.1/compiler-rt-include-cstdint.patch; \
+  fi; \
+  if [ "$LLVM_VERSION_MAJOR" -ge 14 -a "$LLVM_VERSION_MAJOR" -lt 17 ]; then \
+    patch -p1 < patches/14.0.6/mlir-linalg-include-cstdint.patch; \
+  fi; \
+  if [ "$LLVM_VERSION_MAJOR" -ge 13 -a "$LLVM_VERSION_MAJOR" -lt 16 ]; then \
+    patch -p1 < patches/13.0.1/mlir-lsp-server-include-cstdint.patch; \
+  elif [ "$LLVM_VERSION_MAJOR" -ge 16 ]; then \
+    patch -p1 < patches/16.0.6/mlir-lsp-server-include-cstdint.patch; \
   fi; \
   \
   dir="$(mktemp -d)"; \

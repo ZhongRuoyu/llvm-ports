@@ -1,0 +1,12 @@
+diff --git a/mlir/lib/Tools/mlir-lsp-server/MLIRServer.h b/mlir/lib/Tools/mlir-lsp-server/MLIRServer.h
+index 979be615b82cc46c23cddc7f40bd2b792b4b0903..ae8119f1bf8f288c889fd0eeb7311040d7d18fda 100644
+--- a/mlir/lib/Tools/mlir-lsp-server/MLIRServer.h
++++ b/mlir/lib/Tools/mlir-lsp-server/MLIRServer.h
+@@ -11,6 +11,7 @@
+ 
+ #include "mlir/Support/LLVM.h"
+ #include "llvm/Support/Error.h"
++#include <cstdint>
+ #include <memory>
+ #include <optional>
+ 
