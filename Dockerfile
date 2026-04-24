@@ -117,27 +117,33 @@ RUN set -ex; \
   rm llvm-project.tar.xz*; \
   \
   cd /usr/src/llvm-project; \
+  # [nfc] Fix missing include
+  # https://github.com/llvm/llvm-project/commit/b498303066a63a203d24f739b2d2e0e56dca70d1
   if [ "$(echo "${LLVM_VERSION}" | cut -d '.' -f 1)" -ge 8 -a \
       "$(echo "${LLVM_VERSION}" | cut -d '.' -f 1)" -lt 12 ]; then \
-    # [nfc] Fix missing include
-    curl -fL "https://github.com/llvm/llvm-project/commit/b498303066a63a203d24f739b2d2e0e56dca70d1.patch" | git apply; \
+    curl -fL "https://github.com/llvm/llvm-project/commit/b498303066a63a203d24f739b2d2e0e56dca70d1.patch" | patch -p1; \
   fi; \
+  # [Support] Add missing <cstdint> header to Signals.h
+  # https://github.com/llvm/llvm-project/commit/ff1681ddb303223973653f7f5f3f3435b48a1983
   if [ "$(echo "${LLVM_VERSION}" | cut -d '.' -f 1)" -lt 14 ] || \
     [ "$(echo "${LLVM_VERSION}" | cut -d '.' -f 1)" -eq 14 -a \
       "$(echo "${LLVM_VERSION}" | cut -d '.' -f 2)" -eq 0 -a \
       "$(echo "${LLVM_VERSION}" | cut -d '.' -f 3)" -lt 5 ]; then \
-    # [Support] Add missing <cstdint> header to Signals.h
-    curl -fL "https://github.com/llvm/llvm-project/commit/ff1681ddb303223973653f7f5f3f3435b48a1983.patch" | git apply; \
+    curl -fL "https://github.com/llvm/llvm-project/commit/ff1681ddb303223973653f7f5f3f3435b48a1983.patch" | patch -p1; \
   fi; \
+  # [Clang] Fix build with GCC 14 on ARM
   if [ "$(echo "${LLVM_VERSION}" | cut -d '.' -f 1)" -eq 17 ]; then \
-    # [Clang] Fix build with GCC 14 on ARM
-    curl -fL "https://src.fedoraproject.org/rpms/clang/raw/f2215348e79ce1534141b0bbc5d4771ce580ddea/f/0001-Clang-Fix-build-with-GCC-14-on-ARM.patch" | git apply; \
-    # Extend GCC workaround to GCC < 8.4 for llvm::iterator_range ctor (#82643)
-    curl -fL "https://github.com/llvm/llvm-project/commit/7f71fa909a10be182b82b9dfaf0fade6eb84796c.patch" | git apply; \
+    curl -fL "https://src.fedoraproject.org/rpms/clang/raw/f2215348e79ce1534141b0bbc5d4771ce580ddea/f/0001-Clang-Fix-build-with-GCC-14-on-ARM.patch" | patch -p1; \
   fi; \
+  # Extend GCC workaround to GCC < 8.4 for llvm::iterator_range ctor (#82643)
+  # https://github.com/llvm/llvm-project/commit/7f71fa909a10be182b82b9dfaf0fade6eb84796c
+  if [ "$(echo "${LLVM_VERSION}" | cut -d '.' -f 1)" -eq 17 ]; then \
+    curl -fL "https://github.com/llvm/llvm-project/commit/7f71fa909a10be182b82b9dfaf0fade6eb84796c.patch" | patch -p1; \
+  fi; \
+  # Fix remaining build failures with GCC 8.3 (#83266)
+  # https://github.com/llvm/llvm-project/commit/a9304edf20756dd63f896a98bad89e9eac54aebd
   if [ "$(echo "${LLVM_VERSION}" | cut -d '.' -f 1)" -eq 18 ]; then \
-    # Fix remaining build failures with GCC 8.3 (#83266)
-    curl -fL "https://github.com/llvm/llvm-project/commit/a9304edf20756dd63f896a98bad89e9eac54aebd.patch" | git apply; \
+    curl -fL "https://github.com/llvm/llvm-project/commit/a9304edf20756dd63f896a98bad89e9eac54aebd.patch" | patch -p1; \
   fi; \
   \
   dir="$(mktemp -d)"; \
