@@ -19,6 +19,8 @@ env:
   DOCKERHUB_REPOSITORY: zhongruoyu/llvm-ports
   GHCR_USERNAME: zhongruoyu
   GHCR_REPOSITORY: ghcr.io/zhongruoyu/llvm-ports
+  BUILD_CACHE_REPOSITORY: ghcr.io/zhongruoyu/llvm-ports-cache
+  BUILD_CONFIG: ${{ inputs.llvm-version }}${{ inputs.llvm-configuration == 'slim' && '-slim' || '' }}-${{ inputs.base-image-tag }}
 
 jobs:
   build:
@@ -73,21 +75,21 @@ jobs:
             BINUTILS_VERSION
             CMAKE_VERSION
             EXTRA_CMAKE_ARGS=${{ inputs.llvm-configuration == 'slim' && '-DLLVM_LINK_LLVM_DYLIB=ON' || '' }}
+          cache-from: type=registry,ref=${{ env.BUILD_CACHE_REPOSITORY }}:${{ env.BUILD_CONFIG }}-${{ env.ARCH }}
+          cache-to: type=registry,ref=${{ env.BUILD_CACHE_REPOSITORY }}:${{ env.BUILD_CONFIG }}-${{ env.ARCH }},mode=max
           outputs: |
             type=image,name=${{ env.DOCKERHUB_REPOSITORY }},name-canonical=true,push=true,push-by-digest=true
             type=image,name=${{ env.GHCR_REPOSITORY }},name-canonical=true,push=true,push-by-digest=true
       - name: Export digest
         run: |
           mkdir -p "$RUNNER_TEMP"/digests
-          echo "${DIGEST#sha256:}" > "$RUNNER_TEMP/digests/$LLVM_VERSION$CONFIG_SUFFIX-$BASE_IMAGE_TAG-$ARCH"
+          echo "${DIGEST#sha256:}" > "$RUNNER_TEMP/digests/$BUILD_CONFIG-$ARCH"
         env:
           DIGEST: ${{ steps.build.outputs.digest }}
-          ARCH: ${{ matrix.arch }}
-          CONFIG_SUFFIX: ${{ inputs.llvm-configuration == 'slim' && '-slim' || '' }}
       - name: Upload digest
         uses: actions/upload-artifact@v7
         with:
-          name: digest-${{ inputs.llvm-version }}${{ inputs.llvm-configuration == 'slim' && '-slim' || '' }}-${{ inputs.base-image-tag }}-${{ matrix.arch }}
+          name: digest-${{ env.BUILD_CONFIG }}-${{ env.ARCH }}
           path: ${{ runner.temp }}/digests/*
 
   merge:
@@ -120,18 +122,20 @@ jobs:
         uses: actions/download-artifact@v8
         with:
           path: ${{ runner.temp }}/digests
-          pattern: digest-${{ inputs.llvm-version }}${{ inputs.llvm-configuration == 'slim' && '-slim' || '' }}-${{ inputs.base-image-tag }}-*
+          pattern: digest-${{ env.BUILD_CONFIG }}-*
           merge-multiple: true
       - name: Create manifest list and push
         run: |
+          LLVM_VERSION_MAJOR="$(echo "$LLVM_VERSION" | cut -d '.' -f 1)"
+          LLVM_VERSION_MAJOR_MINOR="$(echo "$LLVM_VERSION" | cut -d '.' -f 1-2)"
           docker buildx imagetools create \
-            --tag="$DOCKERHUB_REPOSITORY:$LLVM_VERSION$CONFIG_SUFFIX-$BASE_IMAGE_TAG" \
-            --tag="$DOCKERHUB_REPOSITORY:$(echo "$LLVM_VERSION" | cut -d '.' -f 1-2)$CONFIG_SUFFIX-$BASE_IMAGE_TAG" \
-            --tag="$DOCKERHUB_REPOSITORY:$(echo "$LLVM_VERSION" | cut -d '.' -f 1)$CONFIG_SUFFIX-$BASE_IMAGE_TAG" \
-            --tag="$GHCR_REPOSITORY:$LLVM_VERSION$CONFIG_SUFFIX-$BASE_IMAGE_TAG" \
-            --tag="$GHCR_REPOSITORY:$(echo "$LLVM_VERSION" | cut -d '.' -f 1-2)$CONFIG_SUFFIX-$BASE_IMAGE_TAG" \
-            --tag="$GHCR_REPOSITORY:$(echo "$LLVM_VERSION" | cut -d '.' -f 1)$CONFIG_SUFFIX-$BASE_IMAGE_TAG" \
-            "$GHCR_REPOSITORY@sha256:$(cat "$RUNNER_TEMP/digests/$LLVM_VERSION$CONFIG_SUFFIX-$BASE_IMAGE_TAG-x86_64")" \
-            "$GHCR_REPOSITORY@sha256:$(cat "$RUNNER_TEMP/digests/$LLVM_VERSION$CONFIG_SUFFIX-$BASE_IMAGE_TAG-aarch64")"
+            --tag="$DOCKERHUB_REPOSITORY:$BUILD_CONFIG" \
+            --tag="$DOCKERHUB_REPOSITORY:$LLVM_VERSION_MAJOR_MINOR$CONFIG_SUFFIX-$BASE_IMAGE_TAG" \
+            --tag="$DOCKERHUB_REPOSITORY:$LLVM_VERSION_MAJOR$CONFIG_SUFFIX-$BASE_IMAGE_TAG" \
+            --tag="$GHCR_REPOSITORY:$BUILD_CONFIG" \
+            --tag="$GHCR_REPOSITORY:$LLVM_VERSION_MAJOR_MINOR$CONFIG_SUFFIX-$BASE_IMAGE_TAG" \
+            --tag="$GHCR_REPOSITORY:$LLVM_VERSION_MAJOR$CONFIG_SUFFIX-$BASE_IMAGE_TAG" \
+            "$GHCR_REPOSITORY@sha256:$(cat "$RUNNER_TEMP/digests/$BUILD_CONFIG-x86_64")" \
+            "$GHCR_REPOSITORY@sha256:$(cat "$RUNNER_TEMP/digests/$BUILD_CONFIG-aarch64")"
         env:
           CONFIG_SUFFIX: ${{ inputs.llvm-configuration == 'slim' && '-slim' || '' }}
