@@ -5,6 +5,9 @@ on:
   push:
     branches:
       - main
+  pull_request:
+    branches:
+      - main
   schedule:
     - cron: "0 0 1 * *"
 
@@ -42,4 +45,5 @@ jobs:
       llvm-version: ${{ matrix.llvm-version }}
       base-image-tag: ${{ matrix.base-image-tag }}
       llvm-configuration: ${{ matrix.llvm-configuration }}
+      push: ${{ github.ref_name == 'main' }}
     secrets: inherit
