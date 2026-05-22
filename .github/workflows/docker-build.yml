@@ -22,10 +22,35 @@ env:
   GHCR_USERNAME: zhongruoyu
   GHCR_REPOSITORY: ghcr.io/zhongruoyu/llvm-ports
   BUILD_CACHE_REPOSITORY: ghcr.io/zhongruoyu/llvm-ports/cache
+  LLVM_VERSION: ${{ inputs.llvm-version }}
+  BASE_IMAGE_TAG: ${{ inputs.base-image-tag }}
+  LLVM_CONFIGURATION: ${{ inputs.llvm-configuration }}
   BUILD_CONFIG: ${{ inputs.llvm-version }}${{ inputs.llvm-configuration == 'slim' && '-slim' || '' }}-${{ inputs.base-image-tag }}
 
 jobs:
+  metadata:
+    runs-on: ubuntu-latest
+    outputs:
+      tags: ${{ steps.metadata.outputs.tags }}
+      labels: ${{ steps.metadata.outputs.labels }}
+    steps:
+      - name: Determine metadata
+        id: metadata
+        uses: docker/metadata-action@030e881283bb7a6894de51c315a6bfe6a94e05cf # v6.0.0
+        with:
+          images: |
+            ${{ env.DOCKERHUB_REPOSITORY }}
+            ${{ env.GHCR_REPOSITORY }}
+          flavor: |
+            latest=false
+            suffix=${{ inputs.llvm-configuration == 'slim' && '-slim' || '' }}-${{ env.BASE_IMAGE_TAG }}
+          tags: |
+            type=pep440,value=${{ env.LLVM_VERSION }},pattern={{version}}
+            type=pep440,value=${{ env.LLVM_VERSION }},pattern={{major}}.{{minor}}
+            type=pep440,value=${{ env.LLVM_VERSION }},pattern={{major}}
+
   build:
+    needs: metadata
     strategy:
       fail-fast: false
       matrix:
@@ -41,8 +66,6 @@ jobs:
       contents: read
       packages: write
     env:
-      LLVM_VERSION: ${{ inputs.llvm-version }}
-      BASE_IMAGE_TAG: ${{ inputs.base-image-tag }}
       ARCH: ${{ matrix.arch }}
     steps:
       - name: Free disk space
@@ -93,12 +116,13 @@ jobs:
         uses: docker/build-push-action@bcafcacb16a39f128d818304e6c9c0c18556b85f # v7.1.0
         with:
           platforms: linux/${{ matrix.arch }}
+          labels: ${{ needs.metadata.outputs.labels }}
           build-args: |
             BASE_IMAGE=public.ecr.aws/docker/library/buildpack-deps:${{ env.BASE_IMAGE_TAG }}
             LLVM_VERSION
             BINUTILS_VERSION
             CMAKE_VERSION
-            EXTRA_CMAKE_ARGS=${{ inputs.llvm-configuration == 'slim' && '-DLLVM_LINK_LLVM_DYLIB=ON' || '' }}
+            EXTRA_CMAKE_ARGS=${{ env.LLVM_CONFIGURATION == 'slim' && '-DLLVM_LINK_LLVM_DYLIB=ON' || '' }}
           cache-from: ${{ steps.setup.outputs.cache_from }}
           cache-to: ${{ steps.setup.outputs.cache_to }}
           outputs: ${{ steps.setup.outputs.outputs }}
@@ -116,7 +140,7 @@ jobs:
 
   merge:
     if: inputs.push
-    needs: build
+    needs: [metadata, build]
     name: >
       Merge ${{ inputs.llvm-version }} - ${{ inputs.base-image-tag }}
       ${{ inputs.llvm-configuration && format(' ({0})', inputs.llvm-configuration) || '' }}
@@ -124,9 +148,6 @@ jobs:
     permissions:
       contents: read
       packages: write
-    env:
-      LLVM_VERSION: ${{ inputs.llvm-version }}
-      BASE_IMAGE_TAG: ${{ inputs.base-image-tag }}
     steps:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@4d04d5d9486b7bd6fa91e7baf45bbb4f8b9deedd # v4.0.0
@@ -149,16 +170,15 @@ jobs:
           merge-multiple: true
       - name: Create manifest list and push
         run: |
-          LLVM_VERSION_MAJOR="$(echo "$LLVM_VERSION" | cut -d '.' -f 1)"
-          LLVM_VERSION_MAJOR_MINOR="$(echo "$LLVM_VERSION" | cut -d '.' -f 1-2)"
-          docker buildx imagetools create \
-            --tag="$DOCKERHUB_REPOSITORY:$BUILD_CONFIG" \
-            --tag="$DOCKERHUB_REPOSITORY:$LLVM_VERSION_MAJOR_MINOR$CONFIG_SUFFIX-$BASE_IMAGE_TAG" \
-            --tag="$DOCKERHUB_REPOSITORY:$LLVM_VERSION_MAJOR$CONFIG_SUFFIX-$BASE_IMAGE_TAG" \
-            --tag="$GHCR_REPOSITORY:$BUILD_CONFIG" \
-            --tag="$GHCR_REPOSITORY:$LLVM_VERSION_MAJOR_MINOR$CONFIG_SUFFIX-$BASE_IMAGE_TAG" \
-            --tag="$GHCR_REPOSITORY:$LLVM_VERSION_MAJOR$CONFIG_SUFFIX-$BASE_IMAGE_TAG" \
-            "$GHCR_REPOSITORY@sha256:$(cat "$RUNNER_TEMP/digests/$BUILD_CONFIG-x86_64")" \
+          mapfile -t tags <<< "$TAGS"
+          tag_args=()
+          for tag in "${tags[@]}"; do
+            tag_args+=(--tag="$tag")
+          done
+          images=(
+            "$GHCR_REPOSITORY@sha256:$(cat "$RUNNER_TEMP/digests/$BUILD_CONFIG-x86_64")"
             "$GHCR_REPOSITORY@sha256:$(cat "$RUNNER_TEMP/digests/$BUILD_CONFIG-aarch64")"
+          )
+          docker buildx imagetools create "${tag_args[@]}" "${images[@]}"
         env:
-          CONFIG_SUFFIX: ${{ inputs.llvm-configuration == 'slim' && '-slim' || '' }}
+          TAGS: ${{ needs.metadata.outputs.tags }}
