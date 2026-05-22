@@ -45,5 +45,5 @@ jobs:
       llvm-version: ${{ matrix.llvm-version }}
       base-image-tag: ${{ matrix.base-image-tag }}
       llvm-configuration: ${{ matrix.llvm-configuration }}
-      push: ${{ github.ref_name == 'main' }}
+      push: ${{ github.ref == 'refs/heads/main' }}
     secrets: inherit
