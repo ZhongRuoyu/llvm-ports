@@ -1,4 +1,4 @@
-name: Build and push Docker images
+name: Docker
 
 on:
   workflow_dispatch:
@@ -14,6 +14,12 @@ on:
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
+
+permissions: {}
+
+defaults:
+  run:
+    shell: bash -euxo pipefail {0}
 
 jobs:
   build:
@@ -40,10 +46,17 @@ jobs:
         llvm-configuration:
           - ""
           - slim
+    name: >
+      Build ${{ matrix.llvm-version }} - ${{ matrix.base-image-tag }}
+      ${{ matrix.llvm-configuration && format(' ({0})', matrix.llvm-configuration) || '' }}
     uses: ./.github/workflows/docker-build.yml
+    secrets:
+      DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+    permissions:
+      contents: read
+      packages: write # for pushing image and cache
     with:
       llvm-version: ${{ matrix.llvm-version }}
       base-image-tag: ${{ matrix.base-image-tag }}
       llvm-configuration: ${{ matrix.llvm-configuration }}
       push: ${{ github.ref == 'refs/heads/main' }}
-    secrets: inherit

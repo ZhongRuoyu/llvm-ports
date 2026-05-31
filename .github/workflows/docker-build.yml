@@ -1,4 +1,4 @@
-name: Build and push Docker images for a LLVM version, base image, and configuration
+name: Docker build
 
 on:
   workflow_call:
@@ -11,10 +11,11 @@ on:
         type: string
       push:
         type: boolean
+    secrets:
+      DOCKERHUB_TOKEN:
+        required: true
 
-concurrency:
-  group: ${{ github.workflow }}-build-${{ inputs.llvm-version }}-${{ inputs.base-image-tag }}-${{ inputs.llvm-configuration }}-${{ github.ref }}
-  cancel-in-progress: true
+permissions: {}
 
 defaults:
   run:
@@ -33,6 +34,7 @@ env:
 
 jobs:
   metadata:
+    name: Determine metadata
     runs-on: ubuntu-latest
     outputs:
       tags: ${{ steps.metadata.outputs.tags }}
@@ -58,17 +60,19 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        arch:
-          - x86_64
-          - aarch64
-    name: >
-      Build ${{ inputs.llvm-version }} - ${{ inputs.base-image-tag }}
-      ${{ inputs.llvm-configuration && format(' ({0})', inputs.llvm-configuration) || '' }}
-      (${{ matrix.arch }})
-    runs-on: ${{ matrix.arch == 'aarch64' && 'ubuntu-24.04-arm' || 'ubuntu-24.04' }}
+        include:
+          - arch: x86_64
+            runs-on: ubuntu-latest
+          - arch: aarch64
+            runs-on: ubuntu-24.04-arm
+    name: Build (${{ matrix.arch }})
+    runs-on: ${{ matrix.runs-on }}
+    environment:
+      name: docker
+      deployment: false
     permissions:
       contents: read
-      packages: write
+      packages: write # for pushing image and cache
     env:
       ARCH: ${{ matrix.arch }}
     steps:
@@ -143,15 +147,16 @@ jobs:
           path: ${{ runner.temp }}/digests/*
 
   merge:
+    name: Merge
     if: inputs.push
     needs: [metadata, build]
-    name: >
-      Merge ${{ inputs.llvm-version }} - ${{ inputs.base-image-tag }}
-      ${{ inputs.llvm-configuration && format(' ({0})', inputs.llvm-configuration) || '' }}
     runs-on: ubuntu-latest
+    environment:
+      name: docker
+      deployment: false
     permissions:
       contents: read
-      packages: write
+      packages: write # for pushing image
     steps:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@d7f5e7f509e45cec5c76c4d5afdd7de93d0b3df5 # v4.1.0
