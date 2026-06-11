@@ -46,9 +46,7 @@ jobs:
         llvm-configuration:
           - ""
           - slim
-    name: >
-      Build ${{ matrix.llvm-version }} - ${{ matrix.base-image-tag }}
-      ${{ matrix.llvm-configuration && format(' ({0})', matrix.llvm-configuration) || '' }}
+    name: Build ${{ matrix.llvm-version }} - ${{ matrix.base-image-tag }}${{ matrix.llvm-configuration && format(' ({0})', matrix.llvm-configuration) || '' }}
     uses: ./.github/workflows/docker-build.yml
     secrets:
       DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
