@@ -76,7 +76,7 @@ jobs:
     env:
       ARCH: ${{ matrix.arch }}
     steps:
-      - name: Free disk space
+      - name: Free up disk space
         run: |
           sudo rm -rf \
             /usr/local/lib/android
