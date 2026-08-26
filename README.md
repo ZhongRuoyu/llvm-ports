@@ -16,14 +16,16 @@ They also come with the Debian/Ubuntu release's default
 The image tags are in the format of `version[-variant]-codename`, where
 `version` is the LLVM release version, `codename` is the codename of the
 Debian/Ubuntu release, and `variant` is an optional variant identifier (see
-below). For example, tag `15.0.7-jammy` refers to the image with LLVM 15.0.7 on
-Ubuntu 22.04 (Jammy Jellyfish), and tag `14-slim-bullseye` refers to the "slim"
-variant of the image with the latest LLVM 14 release on Debian 11 (Bullseye).
+below).
+For example, tag `22.1.8-resolute` refers to the image with LLVM 22.1.8 on
+Ubuntu 26.04 (Resolute Raccoon), and tag `23-slim-trixie` refers to the "slim"
+variant of the image with the latest LLVM 23 release on Debian 13 (Trixie).
 
 The following LLVM releases are available:
 
 | LLVM release | versions as appeared in tags |
 | ------------ | ---------------------------- |
+| LLVM 23.1.0  | `23`, `23.1`, `23.1.0`       |
 | LLVM 22.1.8  | `22`, `22.1`, `22.1.8`       |
 | LLVM 21.1.8  | `21`, `21.1`, `21.1.8`       |
 | LLVM 20.1.8  | `20`, `20.1`, `20.1.8`       |
